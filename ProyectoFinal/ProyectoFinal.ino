@@ -1,20 +1,29 @@
 /*
     PROYECTO "ROBOT ESQUIVA OBJETOS"
-
+------------------------------------------------------
 Materiales:
-    Sensor ultrasonico HC-SR04
-    CI L293D (puente H)
-    2 Motorreductores
-    Switch
-    LED Rojo
-    Pila de 9v
-    Jumpers/Cables
-    Placa arduino UNO
-
+    Sensor ultrasónico HC-SR04.
+    CI L293D (puente H).
+    2 Motorreductores.
+    Switch.
+    LED Rojo.
+    Fuente de alimentación de 7v a 12v.
+    Jumpers/Cables.
+    Microcontrolador Arduino UNO o similares.
+    ProtoBoard/Placa de prototipos.
+------------------------------------------------------
 GitHub:
 https://github.com/chuyrc/Electronica.git
 
-(Proyecto de codigo abierto)
+Video explicativo:
+------------------------------------------------------
+  **Si se desea utilizar otros pines de entrada y salida
+  u otro microcontrolador de arduino se debe asegurar que
+  las variables "enableA" y "enableB" estén conectadas
+  a salidas digitales con PWM.**
+
+(Proyecto de código abierto)
+------------------------------------------------------
 */
 
 //  Declaración de variables
@@ -28,42 +37,43 @@ https://github.com/chuyrc/Electronica.git
 #define derB 5
 #define estadoSwitch 4
 
-int vel = 125;  //Velocidad de los motores
+int vel = 100;  //Velocidad de los motores
 
 void setup() {
-    pinMode(estadoSwitch,INPUT_PULLUP);  //Resistencia pull up
-    pinMode(pinEcho, INPUT);
-    pinMode(pinTrigger, OUTPUT);
+    pinMode(estadoSwitch,INPUT_PULLUP);  //Resistencia pull up activa
+    pinMode(pinEcho,INPUT);
+    pinMode(pinTrigger,OUTPUT);
     pinMode(izqA,OUTPUT);
     pinMode(izqB,OUTPUT);
     pinMode(derA,OUTPUT);
     pinMode(derB,OUTPUT);
-    pinMode(13, OUTPUT);  //LED indicador de distancia
+    pinMode(13,OUTPUT);  //LED indicador de distancia
 }
 
 void loop() {
-    if(digitalRead(estadoSwitch) == 1) {
-        avanzar();
-
-        if(comprobarDistancia()) {
+    //if(digitalRead(estadoSwitch) == 1) {
+        if(comprobarDistanciaA(8)) {
             detener();
-            delay(100);
+            retroceder();
             girar();
 
-            if(comprobarDistancia()) {
+            if(comprobarDistanciaA(10)) {
                 detener();
-                delay(100);
+                delay(400);
                 girar();
+                delay(400);
                 girar();
             }
         }
-    }else {
-        detener();
-    }
-    delay(150);
+        avanzar();
+
+    //}else {
+      //  detener();
+    //}
+    delay(200);
 }
 
-//  Devuelve la distancia con el sensor ultrasonico
+//  Devuelve la distancia con el sensor ultrasónico
 long calcularDistancia() {
     digitalWrite(pinTrigger,LOW);
     delayMicroseconds(2);
@@ -76,15 +86,21 @@ long calcularDistancia() {
     return y;
 }
 
-//  Nos indica cuando tiene que girar
-bool comprobarDistancia() {
+//  Decidimos a qué distancia debe detenerse y girar
+bool comprobarDistanciaA(long x) {
     long distancia = calcularDistancia();
 
-    if(distancia <= 2 && distancia >= 1) {
+    if(distancia <= x && distancia >= 1) {
         digitalWrite(13,1);
+        delay(100);
+        digitalWrite(13,0);
+        delay(100);
+        digitalWrite(13,1);
+        delay(100);
+        digitalWrite(13,0);
+
         return true;
     }
-    digitalWrite(13,0);
 
     return false;
 }
@@ -92,29 +108,43 @@ bool comprobarDistancia() {
 //  Métodos para los motores
 void avanzar() {
     analogWrite(enableA,vel);
-    analogWrite(enableA,vel);
+    analogWrite(enableB,vel);
     digitalWrite(derA,1);
     digitalWrite(izqA,0);
     digitalWrite(derB,1);
     digitalWrite(izqB,0);
 }
 
+void retroceder() {
+    analogWrite(enableA,vel);
+    analogWrite(enableB,vel);
+    digitalWrite(derA,0);
+    digitalWrite(izqA,1);
+    digitalWrite(derB,0);
+    digitalWrite(izqB,1);
+    delay(444);
+    analogWrite(enableA,0);
+    analogWrite(enableB,0);
+    delay(500);
+}
+
 void girar() {
     analogWrite(enableA,vel);
-    analogWrite(enableA,vel);
+    analogWrite(enableB,vel);
     digitalWrite(derA,1);
     digitalWrite(izqA,0);
     digitalWrite(derB,0);
     digitalWrite(izqB,1);
-    delay(300);   //Se debe de calibrar para un correcto giro
+    delay(480);   //Se debe de calibrar para un correcto giro
     detener();
 }
 
 void detener() {
     analogWrite(enableA,0);
-    analogWrite(enableA,0);
+    analogWrite(enableB,0);
     digitalWrite(derA,0);
     digitalWrite(izqA,0);
     digitalWrite(derB,0);
     digitalWrite(izqB,0);
+    delay(1500);
 }
