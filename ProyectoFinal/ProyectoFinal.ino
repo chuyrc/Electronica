@@ -1,5 +1,5 @@
 /*
-    PROYECTO "ROBOT ESQUIVA OBJETOS"
+    PROYECTO "ROBOT ESQUIVA OBJETOS BLUETOOTH"
 ------------------------------------------------------
 Materiales:
     Sensor ultrasónico HC-SR04.
@@ -19,8 +19,8 @@ Video explicativo:
 ------------------------------------------------------
   **Si se desea utilizar otros pines de entrada y salida
   u otro microcontrolador de arduino se debe asegurar que
-  las variables "enableA" y "enableB" estén conectadas
-  a salidas digitales con PWM.**
+  la variable "habilitador" esté conectada a una salida
+  digital con PWM.**
 
 (Proyecto de código abierto)
 ------------------------------------------------------
@@ -29,18 +29,17 @@ Video explicativo:
 //  Declaración de variables
 #define pinEcho 12
 #define pinTrigger 11
-#define enableA 10
-#define enableB 9
-#define izqA 8
-#define derA 7
-#define izqB 6
-#define derB 5
-#define estadoSwitch 4
+#define habilitador 10
+#define izqA 9
+#define derA 8
+#define izqB 7
+#define derB 6
 
+char estado = 'f'; //Inicio del programa en carro automático
 int vel = 100;  //Velocidad de los motores
 
 void setup() {
-    pinMode(estadoSwitch,INPUT_PULLUP);  //Resistencia pull up activa
+    Serial.begin(9600);
     pinMode(pinEcho,INPUT);
     pinMode(pinTrigger,OUTPUT);
     pinMode(izqA,OUTPUT);
@@ -51,13 +50,36 @@ void setup() {
 }
 
 void loop() {
-    //if(digitalRead(estadoSwitch) == 1) {
-        if(comprobarDistanciaA(8)) {
+
+    if(Serial.available() >= 0)
+        estado = Serial.read();
+    
+    if(estado == 'a')
+        avanzar();
+
+    if(estado == 'b')
+        girar(0,1);  //giro izquierda
+
+    if(estado == 'c')
+        detener();
+
+    if(estado == 'd')
+        girar(1,0);  //giro derecha
+
+    if(estado == 'e')
+        retroceder();
+
+    if(estado == 'f') {
+        if(comprobarDistanciaA(11)) {
             detener();
+            delay(1000);
             retroceder();
+            delay(444);
+            detener();
+            delay(300);
             girar();
 
-            if(comprobarDistanciaA(10)) {
+            if(comprobarDistanciaA(13)) {
                 detener();
                 delay(400);
                 girar();
@@ -66,11 +88,8 @@ void loop() {
             }
         }
         avanzar();
-
-    //}else {
-      //  detener();
-    //}
-    delay(200);
+        delay(200);
+    }
 }
 
 //  Devuelve la distancia con el sensor ultrasónico
@@ -107,8 +126,7 @@ bool comprobarDistanciaA(long x) {
 
 //  Métodos para los motores
 void avanzar() {
-    analogWrite(enableA,vel);
-    analogWrite(enableB,vel);
+    analogWrite(habilitador,vel);
     digitalWrite(derA,1);
     digitalWrite(izqA,0);
     digitalWrite(derB,1);
@@ -116,21 +134,15 @@ void avanzar() {
 }
 
 void retroceder() {
-    analogWrite(enableA,vel);
-    analogWrite(enableB,vel);
+    analogWrite(habilitador,vel);
     digitalWrite(derA,0);
     digitalWrite(izqA,1);
     digitalWrite(derB,0);
     digitalWrite(izqB,1);
-    delay(444);
-    analogWrite(enableA,0);
-    analogWrite(enableB,0);
-    delay(500);
 }
 
 void girar() {
-    analogWrite(enableA,vel);
-    analogWrite(enableB,vel);
+    analogWrite(habilitador,vel);
     digitalWrite(derA,1);
     digitalWrite(izqA,0);
     digitalWrite(derB,0);
@@ -139,12 +151,15 @@ void girar() {
     detener();
 }
 
+//  Sobrecarga del método girar
+void girar(int x,int y) {  //(1,0) = derecha | (0,1) = izquierda
+    analogWrite(habilitador,vel);
+    digitalWrite(derA,x);
+    digitalWrite(izqA,y);
+    digitalWrite(derB,y);
+    digitalWrite(izqB,x);
+}
+
 void detener() {
-    analogWrite(enableA,0);
-    analogWrite(enableB,0);
-    digitalWrite(derA,0);
-    digitalWrite(izqA,0);
-    digitalWrite(derB,0);
-    digitalWrite(izqB,0);
-    delay(1500);
+    analogWrite(habilitador,0);
 }
