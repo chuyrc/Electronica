@@ -27,19 +27,17 @@ Video explicativo:
 */
 
 //  Declaración de variables
-#define pinEcho 12
-#define pinTrigger 11
+#define pinTrigger 12
+#define pinEcho 11
 #define habilitador 10
 #define izqA 9
 #define derA 8
 #define izqB 7
 #define derB 6
 
-char estado = 'f'; //Inicio del programa en carro automático
 int vel = 100;  //Velocidad de los motores
 
 void setup() {
-    Serial.begin(9600);
     pinMode(pinEcho,INPUT);
     pinMode(pinTrigger,OUTPUT);
     pinMode(izqA,OUTPUT);
@@ -47,49 +45,31 @@ void setup() {
     pinMode(derA,OUTPUT);
     pinMode(derB,OUTPUT);
     pinMode(13,OUTPUT);  //LED indicador de distancia
+    delay(5000); //Retardo al iniciar
 }
 
 void loop() {
-
-    if(Serial.available() >= 0)
-        estado = Serial.read();
-    
-    if(estado == 'a')
-        avanzar();
-
-    if(estado == 'b')
-        girar(0,1);  //giro izquierda
-
-    if(estado == 'c')
+    if(comprobarDistanciaA(15)) {
         detener();
-
-    if(estado == 'd')
-        girar(1,0);  //giro derecha
-
-    if(estado == 'e')
+        delay(1000);
         retroceder();
+        delay(444);
+        detener();
+        delay(1000);
+        girar();
+        delay(1000);
 
-    if(estado == 'f') {
-        if(comprobarDistanciaA(11)) {
+        if(comprobarDistanciaA(15)) {
             detener();
-            delay(1000);
-            retroceder();
-            delay(444);
-            detener();
-            delay(300);
+            delay(400);
             girar();
-
-            if(comprobarDistanciaA(13)) {
-                detener();
-                delay(400);
-                girar();
-                delay(400);
-                girar();
-            }
+            delay(1000);
+            girar();
+            delay(1000);
         }
-        avanzar();
-        delay(200);
     }
+    avanzar();
+    delay(400);
 }
 
 //  Devuelve la distancia con el sensor ultrasónico
@@ -147,17 +127,8 @@ void girar() {
     digitalWrite(izqA,0);
     digitalWrite(derB,0);
     digitalWrite(izqB,1);
-    delay(480);   //Se debe de calibrar para un correcto giro
+    delay(550);   //Se debe de calibrar para un correcto giro
     detener();
-}
-
-//  Sobrecarga del método girar
-void girar(int x,int y) {  //(1,0) = derecha | (0,1) = izquierda
-    analogWrite(habilitador,vel);
-    digitalWrite(derA,x);
-    digitalWrite(izqA,y);
-    digitalWrite(derB,y);
-    digitalWrite(izqB,x);
 }
 
 void detener() {
