@@ -1,5 +1,5 @@
 /*
-    PROYECTO "ROBOT ESQUIVA OBJETOS BLUETOOTH"
+    PROYECTO "ROBOT ESQUIVA OBJETOS"
 ------------------------------------------------------
 Materiales:
     Sensor ultrasónico HC-SR04.
@@ -16,6 +16,7 @@ GitHub:
 https://github.com/chuyrc/Electronica.git
 
 Video explicativo:
+https://youtu.be/H5f-hhY32ss
 ------------------------------------------------------
   **Si se desea utilizar otros pines de entrada y salida
   u otro microcontrolador de arduino se debe asegurar que
@@ -45,15 +46,15 @@ void setup() {
     pinMode(derA,OUTPUT);
     pinMode(derB,OUTPUT);
     pinMode(13,OUTPUT);  //LED indicador de distancia
-    delay(5000); //Retardo al iniciar
+    delay(3000); //Retardo al iniciar
 }
 
 void loop() {
-    if(comprobarDistanciaA(15)) {
+    if(comprobarDistanciaA(20)) {
         detener();
         delay(1000);
         retroceder();
-        delay(444);
+        delay(800);
         detener();
         delay(1000);
         girar();
@@ -80,7 +81,7 @@ long calcularDistancia() {
     delayMicroseconds(10);
 
     long x = pulseIn(pinEcho,HIGH);
-    long y = (x / 2) / 29;
+    long y = x / 58.2;
 
     return y;
 }
@@ -89,7 +90,7 @@ long calcularDistancia() {
 bool comprobarDistanciaA(long x) {
     long distancia = calcularDistancia();
 
-    if(distancia <= x && distancia >= 1) {
+    if(distancia <= x && distancia >= 2) {
         digitalWrite(13,1);
         delay(100);
         digitalWrite(13,0);
